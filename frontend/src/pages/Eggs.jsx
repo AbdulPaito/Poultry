@@ -689,59 +689,91 @@ function Eggs() {
         </motion.div>
       </div>
 
-      {/* Egg Prices Section */}
+      {/* Egg Prices Section - Colorful Cards */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100"
       >
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <DollarSign className="w-5 h-5 text-emerald-500" />
             <h3 className="text-lg font-bold text-gray-800">Egg Prices (Per Tray)</h3>
           </div>
           <button
             onClick={() => setIsPriceModalOpen(true)}
-            className="px-4 py-2 bg-emerald-500 text-white rounded-xl text-sm font-medium hover:bg-emerald-600 transition-colors"
+            className="px-4 py-2 bg-emerald-500 text-white rounded-xl text-sm font-medium hover:bg-emerald-600 transition-colors shadow-md shadow-emerald-200"
           >
             Update Prices
           </button>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {eggPrices && [
-            { key: 'small', label: 'Small', count: totalSmall, breakdown: smallBreakdown },
-            { key: 'medium', label: 'Medium', count: totalMedium, breakdown: mediumBreakdown },
-            { key: 'large', label: 'Large', count: totalLarge, breakdown: largeBreakdown },
-            { key: 'xl', label: 'XL', count: 0, breakdown: xlBreakdown },
-            { key: 'jumbo', label: 'Jumbo', count: totalJumbo, breakdown: jumboBreakdown }
+            { key: 'small', label: 'Small', count: totalSmall, breakdown: smallBreakdown, color: 'from-blue-500 to-blue-600', bgColor: 'bg-blue-500', lightColor: 'bg-blue-50' },
+            { key: 'medium', label: 'Medium', count: totalMedium, breakdown: mediumBreakdown, color: 'from-emerald-500 to-emerald-600', bgColor: 'bg-emerald-500', lightColor: 'bg-emerald-50' },
+            { key: 'large', label: 'Large', count: totalLarge, breakdown: largeBreakdown, color: 'from-amber-500 to-orange-500', bgColor: 'bg-amber-500', lightColor: 'bg-amber-50' },
+            { key: 'xl', label: 'XL', count: 0, breakdown: xlBreakdown, color: 'from-orange-500 to-red-500', bgColor: 'bg-orange-500', lightColor: 'bg-orange-50' },
+            { key: 'jumbo', label: 'Jumbo', count: totalJumbo, breakdown: jumboBreakdown, color: 'from-red-500 to-rose-600', bgColor: 'bg-red-500', lightColor: 'bg-red-50' }
           ].map((size) => (
-            <div key={size.key} className="p-4 bg-gray-50 rounded-xl">
-              <p className="text-sm text-gray-500">{size.label}</p>
-              <p className="text-2xl font-bold text-emerald-600">₱{eggPrices[size.key] || 0}</p>
-              <p className="text-xs text-gray-400">per tray (30 eggs)</p>
-              <div className="mt-2 pt-2 border-t border-gray-200">
-                <p className="text-xs text-gray-500">Today's {size.label}:</p>
-                <p className="text-sm font-semibold text-gray-800">{size.count} eggs</p>
-                {size.breakdown?.trays > 0 && (
-                  <p className="text-xs text-gray-600">
-                    {size.breakdown.trays} tray{size.breakdown.trays > 1 ? 's' : ''} × ₱{size.breakdown.trayPrice}
-                  </p>
-                )}
-                {size.breakdown?.loose > 0 && (
-                  <p className="text-xs text-gray-600">
-                    {size.breakdown.loose} loose × ₱{size.breakdown.piecePrice.toFixed(2)}
-                  </p>
-                )}
-                {size.breakdown?.remaining > 0 && size.breakdown?.loose > 0 && (
-                  <p className="text-xs text-amber-600">
-                    +{size.breakdown.remaining} more to complete tray
-                  </p>
-                )}
-                <p className="text-sm font-bold text-emerald-600 mt-1">
-                  = ₱{Math.round(size.breakdown?.revenue || 0).toLocaleString()}
-                </p>
+            <motion.div 
+              key={size.key}
+              whileHover={{ scale: 1.03, y: -4 }}
+              className={`bg-gradient-to-br ${size.color} rounded-2xl p-5 text-white shadow-lg hover:shadow-xl transition-all overflow-hidden relative`}
+            >
+              {/* Background Pattern */}
+              <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8" />
+              <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full -ml-8 -mb-8" />
+              
+              {/* Content */}
+              <div className="relative z-10">
+                {/* Header */}
+                <div className="flex justify-between items-start mb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-white/90 bg-white/20 px-2 py-1 rounded-lg">
+                    {size.label}
+                  </span>
+                  <span className="text-2xl font-bold">₱{eggPrices[size.key] || 0}</span>
+                </div>
+                
+                {/* Price per tray */}
+                <p className="text-xs text-white/80 mb-4">per tray (30 eggs)</p>
+                
+                {/* Divider */}
+                <div className="h-px bg-white/30 mb-4" />
+                
+                {/* Today's Stats */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs text-white/80">Today's {size.label}:</span>
+                    <span className="text-lg font-bold">{size.count}</span>
+                  </div>
+                  <p className="text-xs text-white/60">eggs total</p>
+                  
+                  {/* Breakdown */}
+                  {size.count > 0 && (
+                    <div className={`mt-3 p-3 ${size.lightColor} rounded-xl bg-opacity-20`}>
+                      <p className="text-sm font-bold text-white">
+                        = ₱{Math.round(size.breakdown?.revenue || 0).toLocaleString()}
+                      </p>
+                      <p className="text-xs text-white/80 mt-1">
+                        {size.breakdown?.trays || 0} tray{size.breakdown?.trays > 1 ? 's' : ''} × ₱{size.breakdown?.trayPrice || eggPrices[size.key]}
+                      </p>
+                      {size.breakdown?.loose > 0 && (
+                        <p className="text-xs text-white/70">
+                          + {size.breakdown.loose} loose × ₱{size.breakdown.piecePrice.toFixed(2)}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  
+                  {size.count === 0 && (
+                    <div className={`mt-3 p-3 ${size.lightColor} rounded-xl bg-opacity-20 text-center`}>
+                      <p className="text-sm font-bold text-white">₱0</p>
+                      <p className="text-xs text-white/70">No eggs recorded today</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </motion.div>
