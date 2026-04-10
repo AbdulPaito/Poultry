@@ -54,13 +54,13 @@ function Login() {
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-              className="w-20 h-20 mx-auto mb-4"
+              transition={{ type: "spring", stiffness: 260, damping: 20 }}
+              className="w-28 h-28 sm:w-32 sm:h-32 mx-auto mb-6"
             >
               <img 
                 src="/poultry logo.png" 
                 alt="Poultry Logo" 
-                className="w-full h-full object-contain rounded-2xl shadow-lg"
+                className="w-full h-full object-contain rounded-2xl shadow-xl"
               />
             </motion.div>
             <h1 className="text-2xl font-bold text-gray-800">Welcome Back!</h1>
