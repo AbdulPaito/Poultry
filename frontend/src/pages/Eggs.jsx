@@ -140,11 +140,15 @@ function EggPriceModal({ isOpen, onClose, eggPrices, onUpdate }) {
               <div className="flex items-center gap-1">
                 <span className="text-gray-500">₱</span>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={prices[size.key]}
-                  onChange={(e) => setPrices({ ...prices, [size.key]: parseInt(e.target.value) || 0 })}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, '')
+                    setPrices({ ...prices, [size.key]: val === '' ? 0 : parseInt(val) })
+                  }}
                   className="w-20 px-3 py-2 border border-gray-200 rounded-lg text-right font-semibold"
-                  min="0"
                 />
               </div>
             </div>
@@ -207,6 +211,26 @@ function Eggs() {
     jumbo: '',
     notes: ''
   })
+
+  // Validation for egg sizes
+  const getSizesSum = () => {
+    return (parseInt(formData.small) || 0) + 
+           (parseInt(formData.medium) || 0) + 
+           (parseInt(formData.large) || 0) + 
+           (parseInt(formData.jumbo) || 0)
+  }
+
+  const getTotalEggs = () => parseInt(formData.total) || 0
+
+  const getValidationStatus = () => {
+    const total = getTotalEggs()
+    const sizesSum = getSizesSum()
+    
+    if (total === 0) return { status: 'neutral', message: '' }
+    if (sizesSum > total) return { status: 'error', message: `Sum of sizes (${sizesSum}) exceeds Total Eggs (${total})` }
+    if (sizesSum < total) return { status: 'warning', message: `Sum of sizes (${sizesSum}) is less than Total Eggs (${total}). ${total - sizesSum} eggs unaccounted for.` }
+    return { status: 'success', message: 'Perfect! Sum matches Total Eggs' }
+  }
 
   useEffect(() => {
     loadData()
@@ -315,6 +339,14 @@ function Eggs() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    // Validate egg sizes
+    const validation = getValidationStatus()
+    if (validation.status === 'error') {
+      alert(`Cannot save: ${validation.message}`)
+      return
+    }
+    
     try {
       // Convert empty strings to 0 before submitting
       const submitData = {
@@ -953,7 +985,7 @@ function Eggs() {
             <select
               value={formData.batchId}
               onChange={(e) => setFormData({ ...formData, batchId: e.target.value })}
-              className="input-field"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
               required
             >
               <option value="">Select batch...</option>
@@ -971,11 +1003,12 @@ function Eggs() {
               type="date"
               value={formData.date}
               onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className="input-field"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
               required
             />
           </div>
           
+          {/* Total and Broken Row */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Total Eggs *</label>
@@ -984,7 +1017,7 @@ function Eggs() {
                 value={formData.total}
                 onChange={(e) => setFormData({ ...formData, total: e.target.value })}
                 placeholder="0"
-                className="input-field"
+                className="w-full px-4 py-3 border-2 border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-lg font-semibold"
                 required
                 min="0"
               />
@@ -996,32 +1029,97 @@ function Eggs() {
                 value={formData.broken}
                 onChange={(e) => setFormData({ ...formData, broken: e.target.value })}
                 placeholder="0"
-                className="input-field"
+                className="w-full px-4 py-3 border-2 border-red-200 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
                 min="0"
               />
             </div>
           </div>
+
+          {/* Size Validation Progress Bar */}
+          {(() => {
+            const validation = getValidationStatus()
+            const total = getTotalEggs()
+            const sum = getSizesSum()
+            const percentage = total > 0 ? Math.min((sum / total) * 100, 100) : 0
+            
+            if (total === 0) return null
+            
+            return (
+              <div className="bg-gray-50 rounded-xl p-3 border-2 border-gray-200">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium text-gray-600">
+                    Size Distribution: <span className="font-bold">{sum}</span> / {total} eggs
+                  </span>
+                  <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                    validation.status === 'success' ? 'bg-emerald-100 text-emerald-700' :
+                    validation.status === 'error' ? 'bg-red-100 text-red-700' :
+                    validation.status === 'warning' ? 'bg-amber-100 text-amber-700' :
+                    'bg-gray-100 text-gray-600'
+                  }`}>
+                    {validation.status === 'success' ? '✓ Complete' :
+                     validation.status === 'error' ? '✗ Excess' :
+                     validation.status === 'warning' ? '⚠ Incomplete' :
+                     'Enter sizes'}
+                  </span>
+                </div>
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      validation.status === 'success' ? 'bg-emerald-500' :
+                      validation.status === 'error' ? 'bg-red-500' :
+                      validation.status === 'warning' ? 'bg-amber-500' :
+                      'bg-gray-400'
+                    }`}
+                    style={{ width: `${percentage}%` }}
+                  />
+                </div>
+                {validation.message && (
+                  <p className={`text-xs mt-2 text-center font-medium ${
+                    validation.status === 'success' ? 'text-emerald-600' :
+                    validation.status === 'error' ? 'text-red-600' :
+                    validation.status === 'warning' ? 'text-amber-600' :
+                    'text-gray-500'
+                  }`}>
+                    {validation.message}
+                  </p>
+                )}
+              </div>
+            )
+          })()}
           
+          {/* Size Inputs with Color Coding */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Small</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-blue-400"></span> Small
+              </label>
               <input
                 type="number"
                 value={formData.small}
                 onChange={(e) => setFormData({ ...formData, small: e.target.value })}
                 placeholder="0"
-                className="input-field"
+                className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${
+                  getTotalEggs() > 0 && (parseInt(formData.small) || 0) > 0 
+                    ? 'border-blue-300 bg-blue-50/30' 
+                    : 'border-gray-200'
+                }`}
                 min="0"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Medium</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-green-400"></span> Medium
+              </label>
               <input
                 type="number"
                 value={formData.medium}
                 onChange={(e) => setFormData({ ...formData, medium: e.target.value })}
                 placeholder="0"
-                className="input-field"
+                className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all ${
+                  getTotalEggs() > 0 && (parseInt(formData.medium) || 0) > 0 
+                    ? 'border-green-300 bg-green-50/30' 
+                    : 'border-gray-200'
+                }`}
                 min="0"
               />
             </div>
@@ -1029,24 +1127,36 @@ function Eggs() {
           
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Large</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-amber-400"></span> Large
+              </label>
               <input
                 type="number"
                 value={formData.large}
                 onChange={(e) => setFormData({ ...formData, large: e.target.value })}
                 placeholder="0"
-                className="input-field"
+                className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all ${
+                  getTotalEggs() > 0 && (parseInt(formData.large) || 0) > 0 
+                    ? 'border-amber-300 bg-amber-50/30' 
+                    : 'border-gray-200'
+                }`}
                 min="0"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Jumbo</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-red-400"></span> Jumbo
+              </label>
               <input
                 type="number"
                 value={formData.jumbo}
                 onChange={(e) => setFormData({ ...formData, jumbo: e.target.value })}
                 placeholder="0"
-                className="input-field"
+                className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all ${
+                  getTotalEggs() > 0 && (parseInt(formData.jumbo) || 0) > 0 
+                    ? 'border-red-300 bg-red-50/30' 
+                    : 'border-gray-200'
+                }`}
                 min="0"
               />
             </div>
@@ -1057,16 +1167,42 @@ function Eggs() {
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="input-field min-h-[80px] resize-none"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all min-h-[80px] resize-none"
               placeholder="Any observations..."
             />
           </div>
           
+          {/* Validation Error Banner */}
+          {(() => {
+            const validation = getValidationStatus()
+            if (validation.status !== 'error') return null
+            return (
+              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-3 flex items-center gap-3">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-red-600 text-lg">✗</span>
+                </div>
+                <p className="text-sm text-red-700 font-medium">{validation.message}</p>
+              </div>
+            )
+          })()}
+          
           <div className="flex gap-3 pt-4">
-            <button type="button" onClick={closeModal} className="flex-1 btn-secondary">
+            <button 
+              type="button" 
+              onClick={closeModal} 
+              className="flex-1 py-3 border-2 border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
+            >
               Cancel
             </button>
-            <button type="submit" className="flex-1 btn-primary">
+            <button 
+              type="submit" 
+              className={`flex-1 py-3 rounded-xl font-semibold transition-all ${
+                getValidationStatus().status === 'error'
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:shadow-lg hover:shadow-emerald-200'
+              }`}
+              disabled={getValidationStatus().status === 'error'}
+            >
               {editingRecord ? 'Update' : 'Save'} Record
             </button>
           </div>
