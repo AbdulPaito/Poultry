@@ -79,11 +79,7 @@ function Dashboard() {
     eggTrend: []
   })
   const [loading, setLoading] = useState(true)
-  const [activities, setActivities] = useState([
-    { id: 1, text: 'Batch A-001 added', time: '2 hours ago', type: 'batch' },
-    { id: 2, text: '150 eggs recorded today', time: '4 hours ago', type: 'egg' },
-    { id: 3, text: 'Low stock alert: Layer Feed', time: '6 hours ago', type: 'alert' },
-  ])
+  const [activities, setActivities] = useState([])
   const [alerts, setAlerts] = useState([])
 
   useEffect(() => {
