@@ -6,6 +6,7 @@ import {
   ChevronDown, ChevronUp, AlertTriangle, TrendingUp, DollarSign, Store
 } from 'lucide-react'
 import { medicineAPI, medicineScheduleAPI, batchAPI } from '../services/api'
+import { useToast } from '../contexts/ToastContext'
 
 // Modal Component
 function Modal({ isOpen, onClose, title, children }) {
@@ -46,6 +47,7 @@ function Modal({ isOpen, onClose, title, children }) {
 }
 
 function Medicine() {
+  const { success, error: showError } = useToast()
   const [activeTab, setActiveTab] = useState('inventory')
   const [medicines, setMedicines] = useState([])
   const [schedules, setSchedules] = useState([])
@@ -152,15 +154,17 @@ function Medicine() {
       
       if (editingMedicine) {
         await medicineAPI.update(editingMedicine._id, data)
+        success('Medicine updated successfully!')
       } else {
         await medicineAPI.create(data)
+        success('New medicine added successfully!')
       }
       
       loadData()
       setIsMedicineModalOpen(false)
     } catch (error) {
       console.error('Error saving medicine:', error)
-      alert(error.response?.data?.message || 'Failed to save medicine')
+      showError(error.response?.data?.message || 'Failed to save medicine')
     }
   }
 
@@ -196,8 +200,10 @@ function Medicine() {
       
       await loadData()
       closeDeleteConfirm()
+      success('Medicine deleted successfully!')
     } catch (error) {
       console.error('Error deleting medicine:', error)
+      showError('Failed to delete medicine. Please try again.')
     }
   }
 
@@ -221,9 +227,10 @@ function Medicine() {
       })
       loadData()
       setIsRestockModalOpen(false)
+      success(`Restocked ${restockForm.quantity} ${selectedMedicine.unit} of ${selectedMedicine.name}`)
     } catch (error) {
       console.error('Error restocking:', error)
-      alert(error.response?.data?.message || 'Failed to restock')
+      showError(error.response?.data?.message || 'Failed to restock medicine')
     }
   }
 
@@ -247,9 +254,10 @@ function Medicine() {
       })
       loadData()
       setIsScheduleModalOpen(false)
+      success('Medication scheduled successfully!')
     } catch (error) {
       console.error('Error creating schedule:', error)
-      alert(error.response?.data?.message || 'Failed to create schedule')
+      showError(error.response?.data?.message || 'Failed to create schedule')
     }
   }
 
@@ -257,9 +265,10 @@ function Medicine() {
     try {
       await medicineScheduleAPI.complete(scheduleId, {})
       loadData()
+      success('Medication marked as completed!')
     } catch (error) {
       console.error('Error completing schedule:', error)
-      alert('Failed to complete schedule')
+      showError('Failed to complete schedule')
     }
   }
 
@@ -268,9 +277,10 @@ function Medicine() {
     try {
       await medicineScheduleAPI.cancel(scheduleId)
       loadData()
+      success('Schedule cancelled successfully!')
     } catch (error) {
       console.error('Error cancelling schedule:', error)
-      alert('Failed to cancel schedule')
+      showError('Failed to cancel schedule')
     }
   }
 
