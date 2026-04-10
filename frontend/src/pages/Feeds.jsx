@@ -111,11 +111,22 @@ function Feeds() {
   const [restockQuantity, setRestockQuantity] = useState('')
 
   useEffect(() => {
-    loadData()
+    // Small delay to ensure auth token is set
+    const timer = setTimeout(() => {
+      loadData()
+    }, 100)
+    return () => clearTimeout(timer)
   }, [])
 
-  const loadData = async () => {
+  const loadData = async (retryCount = 0) => {
     try {
+      const token = localStorage.getItem('token')
+      if (!token && retryCount < 3) {
+        console.log('No token found, retrying...')
+        setTimeout(() => loadData(retryCount + 1), 500)
+        return
+      }
+      
       const [feedsRes, alertsRes, batchesRes, allUsageRes] = await Promise.all([
         feedAPI.getAll(),
         feedAPI.getAlerts(),

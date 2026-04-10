@@ -83,11 +83,22 @@ function Medicine() {
   const medicineUnits = ['bottles', 'packets', 'tablets', 'ml', 'grams', 'units', 'pieces']
 
   useEffect(() => {
-    loadData()
+    // Small delay to ensure auth token is set
+    const timer = setTimeout(() => {
+      loadData()
+    }, 100)
+    return () => clearTimeout(timer)
   }, [activeTab])
 
-  const loadData = async () => {
+  const loadData = async (retryCount = 0) => {
     try {
+      const token = localStorage.getItem('token')
+      if (!token && retryCount < 3) {
+        console.log('No token found, retrying...')
+        setTimeout(() => loadData(retryCount + 1), 500)
+        return
+      }
+      
       setLoading(true)
       
       // Load medicines and stats

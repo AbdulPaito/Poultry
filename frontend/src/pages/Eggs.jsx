@@ -239,8 +239,12 @@ function Eggs() {
   }
 
   useEffect(() => {
-    loadData()
-    loadEggPrices()
+    // Small delay to ensure auth token is set
+    const timer = setTimeout(() => {
+      loadData()
+      loadEggPrices()
+    }, 100)
+    return () => clearTimeout(timer)
   }, [])
 
   useEffect(() => {
@@ -256,8 +260,15 @@ function Eggs() {
     }
   }
 
-  const loadData = async () => {
+  const loadData = async (retryCount = 0) => {
     try {
+      const token = localStorage.getItem('token')
+      if (!token && retryCount < 3) {
+        console.log('No token found, retrying...')
+        setTimeout(() => loadData(retryCount + 1), 500)
+        return
+      }
+      
       const [recordsRes, batchesRes] = await Promise.all([
         eggAPI.getAll(),
         batchAPI.getAll()

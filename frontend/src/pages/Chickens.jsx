@@ -119,18 +119,34 @@ function Chickens() {
   })
 
   useEffect(() => {
-    loadBatches()
+    // Small delay to ensure auth token is set
+    const timer = setTimeout(() => {
+      loadBatches()
+    }, 100)
+    return () => clearTimeout(timer)
   }, [])
 
-  const loadBatches = async () => {
+  const loadBatches = async (retryCount = 0) => {
     try {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        console.log('No token found, waiting...')
+        if (retryCount < 3) {
+          setTimeout(() => loadBatches(retryCount + 1), 500)
+          return
+        }
+      }
+      
       const response = await batchAPI.getAll()
       console.log('Loaded batches:', response.data)
       setBatches(response.data || [])
       return response.data
     } catch (error) {
       console.error('Error loading batches:', error)
-      setBatches([])
+      // If 401, don't clear data - might be auth delay
+      if (error.response?.status !== 401) {
+        setBatches([])
+      }
     } finally {
       setLoading(false)
     }
