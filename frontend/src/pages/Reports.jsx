@@ -73,6 +73,7 @@ function Reports() {
         reportAPI.getEggPrices()
       ])
       
+      console.log('Medicine Costs Data:', medicine.data)
       setFinancialData(financial.data)
       setEggProduction(eggProd.data)
       setMortalityData(mortality.data)
