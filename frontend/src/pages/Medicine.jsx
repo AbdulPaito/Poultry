@@ -691,51 +691,91 @@ function Medicine() {
           {/* SCHEDULES TAB */}
           {activeTab === 'schedules' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-blue-500" />
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-2xl shadow-lg border border-blue-200 p-6">
+                <h3 className="font-bold text-lg text-gray-800 mb-5 flex items-center gap-2">
+                  <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
+                    <Calendar className="w-5 h-5 text-white" />
+                  </div>
                   Pending Schedules
+                  <span className="ml-auto bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    {schedules.length}
+                  </span>
                 </h3>
-                <div className="space-y-3">
-                  {schedules.map((schedule) => (
-                    <div key={schedule._id} className="flex items-center justify-between p-4 bg-blue-50 rounded-xl border border-blue-100">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                          <Pill className="w-5 h-5 text-white" />
+                <div className="space-y-4">
+                  {schedules.map((schedule, idx) => (
+                    <motion.div 
+                      key={schedule._id} 
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      className="bg-white rounded-2xl p-5 shadow-md border border-blue-100 hover:shadow-lg hover:border-blue-300 transition-all"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        {/* Left - Medicine Info */}
+                        <div className="flex items-start gap-4">
+                          <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200 flex-shrink-0">
+                            <Pill className="w-7 h-7 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-bold text-lg text-gray-800">{schedule.medicineId?.name}</h4>
+                            <div className="flex flex-wrap items-center gap-2 mt-1">
+                              <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-medium">
+                                {schedule.medicineId?.type}
+                              </span>
+                              <span className="text-sm text-gray-500">
+                                Batch: {schedule.batchId?.batchId} - {schedule.batchId?.breed}
+                              </span>
+                            </div>
+                            {/* Quantity & Dosage */}
+                            <div className="flex items-center gap-4 mt-3">
+                              <div className="flex items-center gap-2 bg-amber-50 px-3 py-2 rounded-xl border border-amber-200">
+                                <span className="text-2xl font-bold text-amber-600">{schedule.quantity}</span>
+                                <span className="text-sm text-amber-700 font-medium">{schedule.medicineId?.unit}</span>
+                              </div>
+                              {schedule.dosage && (
+                                <div className="text-sm text-gray-600 bg-gray-100 px-3 py-2 rounded-xl">
+                                  <span className="font-medium">Dosage:</span> {schedule.dosage}
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-semibold text-gray-800">{schedule.medicineId?.name}</p>
-                          <p className="text-sm text-gray-500">
-                            Batch: {schedule.batchId?.batchId} - {schedule.batchId?.breed}
-                          </p>
-                          <p className="text-xs text-blue-600">
-                            {schedule.quantity} {schedule.medicineId?.unit} • {schedule.dosage}
-                          </p>
+                        
+                        {/* Right - Date, Time & Actions */}
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                          <div className="text-right bg-blue-50 px-4 py-3 rounded-xl border border-blue-100">
+                            <p className="text-sm font-bold text-gray-800">
+                              {new Date(schedule.scheduledDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </p>
+                            <p className="text-xs text-blue-600 font-medium mt-1">
+                              {new Date(schedule.scheduledDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                            <span className="inline-block mt-2 px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-bold">
+                              ⏳ Pending
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => handleCompleteSchedule(schedule._id)}
+                              className="px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-green-200 transition-all flex items-center gap-2"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                              Complete
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => handleCancelSchedule(schedule._id)}
+                              className="p-3 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition-colors border border-red-200"
+                            >
+                              <X className="w-5 h-5" />
+                            </motion.button>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <div className="text-right mr-2">
-                          <p className="text-sm font-medium text-gray-800">
-                            {new Date(schedule.scheduledDate).toLocaleDateString()}
-                          </p>
-                          <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">
-                            Pending
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => handleCompleteSchedule(schedule._id)}
-                          className="px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition-colors"
-                        >
-                          Complete
-                        </button>
-                        <button
-                          onClick={() => handleCancelSchedule(schedule._id)}
-                          className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
                 {schedules.length === 0 && (
@@ -751,38 +791,87 @@ function Medicine() {
           {/* HISTORY TAB */}
           {activeTab === 'history' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <History className="w-5 h-5 text-green-500" />
+              <div className="bg-gradient-to-br from-emerald-50 to-green-100/50 rounded-2xl shadow-lg border border-emerald-200 p-6">
+                <h3 className="font-bold text-lg text-gray-800 mb-5 flex items-center gap-2">
+                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-200">
+                    <History className="w-5 h-5 text-white" />
+                  </div>
                   Completed Medications
+                  <span className="ml-auto bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    {history.length}
+                  </span>
                 </h3>
-                <div className="space-y-3">
-                  {history.map((item) => (
-                    <div key={item._id} className="flex items-center justify-between p-4 bg-green-50 rounded-xl border border-green-100">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-                          <CheckCircle className="w-5 h-5 text-white" />
+                <div className="space-y-4">
+                  {history.map((item, idx) => (
+                    <motion.div 
+                      key={item._id} 
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      className="bg-white rounded-2xl p-5 shadow-md border border-emerald-100 hover:shadow-lg transition-all"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        {/* Left - Medicine Info */}
+                        <div className="flex items-start gap-4">
+                          <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-200 flex-shrink-0">
+                            <CheckCircle className="w-7 h-7 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-bold text-lg text-gray-800">{item.medicineId?.name}</h4>
+                            <div className="flex flex-wrap items-center gap-2 mt-1">
+                              <span className="px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium">
+                                {item.medicineId?.type}
+                              </span>
+                              <span className="text-sm text-gray-500">
+                                Batch: {item.batchId?.batchId} - {item.batchId?.breed}
+                              </span>
+                            </div>
+                            {/* Quantity Used */}
+                            <div className="flex items-center gap-4 mt-3">
+                              <div className="flex items-center gap-2 bg-amber-50 px-3 py-2 rounded-xl border border-amber-200">
+                                <span className="text-2xl font-bold text-amber-600">{item.quantity || '?'}</span>
+                                <span className="text-sm text-amber-700 font-medium">{item.medicineId?.unit} used</span>
+                              </div>
+                              {item.dosage && (
+                                <div className="text-sm text-gray-600 bg-gray-100 px-3 py-2 rounded-xl">
+                                  <span className="font-medium">Dosage:</span> {item.dosage}
+                                </div>
+                              )}
+                            </div>
+                            {item.notes && (
+                              <div className="mt-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                                <p className="text-sm text-gray-600">
+                                  <span className="font-medium">Notes:</span> {item.notes}
+                                </p>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-semibold text-gray-800">{item.medicineId?.name}</p>
-                          <p className="text-sm text-gray-500">
-                            Batch: {item.batchId?.batchId} - {item.batchId?.breed}
+                        
+                        {/* Right - Date, Time & User */}
+                        <div className="text-right bg-emerald-50 px-4 py-3 rounded-xl border border-emerald-100">
+                          <p className="text-sm font-bold text-gray-800">
+                            {new Date(item.administeredDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                           </p>
-                          {item.notes && <p className="text-xs text-gray-400">{item.notes}</p>}
+                          <p className="text-xs text-emerald-600 font-medium mt-1">
+                            {new Date(item.administeredDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                          <div className="flex items-center justify-end gap-2 mt-2">
+                            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                              <span className="text-xs text-white font-bold">
+                                {item.administeredBy?.username?.charAt(0).toUpperCase() || '?'}
+                              </span>
+                            </div>
+                            <span className="text-xs text-gray-500">
+                              {item.administeredBy?.username || 'Unknown'}
+                            </span>
+                          </div>
+                          <span className="inline-block mt-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                            ✅ Completed
+                          </span>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium text-gray-800">
-                          {new Date(item.administeredDate).toLocaleDateString()}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          By: {item.administeredBy?.username}
-                        </p>
-                        <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">
-                          Completed
-                        </span>
-                      </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
                 {history.length === 0 && (
