@@ -177,30 +177,8 @@ function Feeds() {
       })
     } catch (error) {
       console.error('Error loading data:', error)
-      // Demo data
-      setFeeds([
-        {
-          _id: '1',
-          name: 'Premium Layer Feed',
-          type: 'layer',
-          brand: 'Golden Grains',
-          stock: 45,
-          unit: 'kg',
-          costPerUnit: 28.50,
-          lowStockThreshold: 10
-        },
-        {
-          _id: '2',
-          name: 'Starter Mash',
-          type: 'starter',
-          brand: 'Farm Fresh',
-          stock: 8,
-          unit: 'kg',
-          costPerUnit: 32.00,
-          lowStockThreshold: 15
-        }
-      ])
-      setAlerts([feedsRes?.data?.[1]].filter(Boolean))
+      setFeeds([])
+      setAlerts([])
     } finally {
       setLoading(false)
     }

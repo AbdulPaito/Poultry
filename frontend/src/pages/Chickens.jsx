@@ -127,32 +127,7 @@ function Chickens() {
       return response.data
     } catch (error) {
       console.error('Error loading batches:', error)
-      setBatches([
-        {
-          _id: '1',
-          batchId: 'A-001',
-          breed: 'Rhode Island Red',
-          quantity: 50,
-          dateAcquired: '2024-01-15',
-          source: 'Local Supplier',
-          notes: 'Healthy batch, good layers',
-          status: 'active',
-          mortalityCount: 2,
-          soldCount: 0
-        },
-        {
-          _id: '2',
-          batchId: 'A-002',
-          breed: 'Leghorn',
-          quantity: 75,
-          dateAcquired: '2024-02-01',
-          source: 'Farm Direct',
-          notes: 'High egg production breed',
-          status: 'active',
-          mortalityCount: 0,
-          soldCount: 0
-        }
-      ])
+      setBatches([])
     } finally {
       setLoading(false)
     }
