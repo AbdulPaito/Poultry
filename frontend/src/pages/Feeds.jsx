@@ -1079,96 +1079,76 @@ function Feeds() {
         </form>
       </Modal>
 
-      {/* Delete Confirmation Modal */}
-      <Modal
-        isOpen={deleteConfirmOpen}
-        onClose={closeDeleteConfirm}
-        title={null}
-      >
-        <div className="text-center py-8 px-4 relative">
-          {/* Close X Button */}
-          <button 
+      {/* Delete Confirmation Modal - Beautiful Design */}
+      <AnimatePresence>
+        {deleteConfirmOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onClick={closeDeleteConfirm}
-            className="absolute top-2 right-2 p-2 hover:bg-gray-100 rounded-xl transition-colors"
           >
-            <X className="w-5 h-5 text-gray-400" />
-          </button>
-          
-          {/* Animated Icon */}
-          <motion.div 
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15 }}
-            className="w-24 h-24 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-red-100"
-          >
-            <Trash2 className="w-12 h-12 text-red-600" />
-          </motion.div>
-          
-          {/* Title */}
-          <motion.h3 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-2xl font-bold text-gray-900 mb-3"
-          >
-            Delete Feed
-          </motion.h3>
-          
-          {/* Feed Name Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl mb-4"
-          >
-            <Wheat className="w-4 h-4 text-amber-500" />
-            <span className="font-semibold text-amber-800">{deleteTarget?.name}</span>
-          </motion.div>
-          
-          {/* Warning Message */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-8"
-          >
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-              <div className="text-left">
-                <p className="text-red-800 font-semibold text-sm mb-1">This action cannot be undone</p>
-                <p className="text-red-600 text-sm leading-relaxed">
-                  Deleting this feed will remove all associated records from your inventory permanently.
-                </p>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden"
+            >
+              {/* Header with warning color */}
+              <div className="bg-gradient-to-r from-red-500 to-red-600 p-6 text-center">
+                <motion.div 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                  className="w-20 h-20 bg-white/20 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-3"
+                >
+                  <AlertTriangle className="w-10 h-10 text-white" />
+                </motion.div>
+                <h3 className="text-2xl font-bold text-white">Delete Feed?</h3>
+                <p className="text-white/80 text-sm mt-1">This action cannot be undone</p>
               </div>
-            </div>
+
+              {/* Content */}
+              <div className="p-6">
+                {/* Feed Name */}
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <Wheat className="w-5 h-5 text-amber-500" />
+                  <span className="font-semibold text-amber-800 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200">
+                    {deleteTarget?.name}
+                  </span>
+                </div>
+
+                <div className="bg-red-50 rounded-xl p-4 border border-red-100 mb-6">
+                  <p className="text-sm text-red-800 text-center">
+                    <strong>Warning:</strong> Deleting this feed will permanently remove it and all associated consumption records from the database.
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={closeDeleteConfirm}
+                    className="flex-1 py-3 border-2 border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02, boxShadow: "0 10px 30px -10px rgba(239, 68, 68, 0.5)" }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={confirmDelete}
+                    className="flex-1 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-semibold hover:from-red-600 hover:to-red-700 transition-all shadow-lg shadow-red-200"
+                  >
+                    Delete Feed
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
-          
-          {/* Actions */}
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
-            className="flex gap-3"
-          >
-            <motion.button 
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={closeDeleteConfirm} 
-              className="flex-1 py-3.5 px-4 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
-            >
-              Cancel
-            </motion.button>
-            <motion.button 
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={confirmDelete}
-              className="flex-1 py-3.5 px-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-semibold shadow-lg shadow-red-200 hover:shadow-xl hover:from-red-600 hover:to-red-700 transition-all"
-            >
-              Delete Feed
-            </motion.button>
-          </motion.div>
-        </div>
-      </Modal>
+        )}
+      </AnimatePresence>
 
       {/* Record Consumption Modal */}
       <Modal
