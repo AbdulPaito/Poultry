@@ -196,11 +196,8 @@ function Medicine() {
       
       await loadData()
       closeDeleteConfirm()
-      alert('Medicine deleted successfully!')
     } catch (error) {
       console.error('Error deleting medicine:', error)
-      const errorMsg = error.response?.data?.message || error.message || 'Unknown error'
-      alert(`Failed to delete medicine: ${errorMsg}\n\nThe medicine may have already been deleted or the server is experiencing issues. Please refresh the page.`)
     }
   }
 
