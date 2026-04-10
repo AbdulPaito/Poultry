@@ -56,6 +56,7 @@ function Modal({ isOpen, onClose, title, children }) {
 
 // Egg Price Modal Component
 function EggPriceModal({ isOpen, onClose, eggPrices, onUpdate }) {
+  const { error: showError } = useToast()
   const [prices, setPrices] = useState({
     small: 150,
     medium: 180,
@@ -86,7 +87,7 @@ function EggPriceModal({ isOpen, onClose, eggPrices, onUpdate }) {
       onClose()
     } catch (error) {
       console.error('Error updating egg prices:', error)
-      alert('Failed to update egg prices')
+      showError('Failed to update egg prices')
     } finally {
       setLoading(false)
     }
@@ -360,7 +361,7 @@ function Eggs() {
     // Validate egg sizes
     const validation = getValidationStatus()
     if (validation.status === 'error') {
-      alert(`Cannot save: ${validation.message}`)
+      showError(`Cannot save: ${validation.message}`)
       return
     }
     
@@ -404,9 +405,10 @@ function Eggs() {
       await eggAPI.delete(recordToDelete)
       loadData()
       closeDeleteConfirm()
+      success('Egg record deleted successfully!')
     } catch (error) {
       console.error('Error deleting record:', error)
-      alert('Failed to delete record: ' + (error.response?.data?.message || error.message))
+      showError('Failed to delete record: ' + (error.response?.data?.message || error.message))
     }
   }
 

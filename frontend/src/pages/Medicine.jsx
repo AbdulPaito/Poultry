@@ -195,7 +195,7 @@ function Medicine() {
     // Check if medicine still exists before deleting
     const medicineExists = medicines.find(m => m._id === medicineToDelete)
     if (!medicineExists) {
-      alert('Medicine not found in inventory. It may have already been deleted.')
+      showError('Medicine not found in inventory. It may have already been deleted.')
       closeDeleteConfirm()
       await loadData()
       return

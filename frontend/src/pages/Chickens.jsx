@@ -286,7 +286,7 @@ function Chickens() {
     const batch = batches.find(b => b._id === batchId)
     const record = batch?.mortalityRecords?.[recordIndex]
     if (!record) {
-      alert('Record not found')
+      showError('Record not found')
       return
     }
 
@@ -317,8 +317,7 @@ function Chickens() {
       ))
     } catch (error) {
       console.error('Error deleting mortality:', error)
-      // Show error in modal instead of alert
-      alert('Failed to delete record: ' + error.message)
+      showError('Failed to delete record: ' + error.message)
     }
 
     closeDeleteConfirm()
