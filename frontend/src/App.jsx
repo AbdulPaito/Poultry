@@ -1,4 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import axios from 'axios'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
@@ -9,6 +11,27 @@ import Medicine from './pages/Medicine'
 import Reports from './pages/Reports'
 import Settings from './pages/Settings'
 import Layout from './layouts/Layout'
+
+// Initialize axios auth header from localStorage on app load
+const token = localStorage.getItem('token')
+if (token) {
+  axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+  console.log('App initialized with auth token')
+}
+
+// Add axios request interceptor to ensure auth header is always present
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
 
 function PrivateRoute({ children }) {
   const { isAuthenticated, isLoading } = useAuth()

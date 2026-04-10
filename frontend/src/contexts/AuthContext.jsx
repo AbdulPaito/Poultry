@@ -14,13 +14,18 @@ export function AuthProvider({ children }) {
     const verifyAuth = async () => {
       const token = localStorage.getItem('token')
       
+      // Always set axios header if token exists
+      if (token) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      }
+      
       if (token) {
         try {
-          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
           // Verify token with backend
           const response = await axios.get(`${API_URL}/auth/me`)
           setUser(response.data)
           setIsAuthenticated(true)
+          console.log('Auth verified successfully')
         } catch (error) {
           // Only logout if token is actually invalid (401), not for network errors
           if (error.response?.status === 401) {
@@ -28,12 +33,15 @@ export function AuthProvider({ children }) {
             localStorage.removeItem('token')
             localStorage.removeItem('user')
             delete axios.defaults.headers.common['Authorization']
+            setIsAuthenticated(false)
+            setUser(null)
           } else {
-            // For network errors or other issues, keep the token and set authenticated
-            // The user will retry on next request
-            console.log('Auth verification failed, keeping session:', error.message)
+            // For network errors or CORS issues on Vercel, keep the session
+            console.log('Auth verification failed (network/CORS), keeping session:', error.message)
+            // Ensure auth header is still set
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
             setIsAuthenticated(true)
-            // Try to restore user from localStorage if available
+            // Restore user from localStorage
             const savedUser = localStorage.getItem('user')
             if (savedUser) {
               try {
@@ -44,6 +52,9 @@ export function AuthProvider({ children }) {
             }
           }
         }
+      } else {
+        setIsAuthenticated(false)
+        setUser(null)
       }
       setIsLoading(false)
     }
