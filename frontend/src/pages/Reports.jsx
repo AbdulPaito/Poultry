@@ -107,8 +107,8 @@ function Reports() {
     },
     {
       id: 'mortality',
-      title: 'Chicken/Mortality Report',
-      description: 'Mortality analysis by batch',
+      title: 'Chicken Deaths Report',
+      description: 'Dead chickens analysis by batch',
       icon: AlertCircle,
       color: 'from-red-500 to-pink-500'
     },
@@ -473,7 +473,7 @@ function Reports() {
                 </div>
                 <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
                   <p className="text-3xl font-bold text-red-600">{mortalityData.summary?.totalMortality?.toLocaleString()}</p>
-                  <p className="text-sm text-gray-500">Total Mortality</p>
+                  <p className="text-sm text-gray-500">Dead Chickens</p>
                 </div>
                 <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
                   <p className="text-3xl font-bold text-amber-600">{mortalityData.summary?.overallMortalityRate}%</p>
@@ -494,7 +494,7 @@ function Reports() {
                         <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Breed</th>
                         <th className="text-center px-4 py-3 text-sm font-semibold text-gray-700">Initial</th>
                         <th className="text-center px-4 py-3 text-sm font-semibold text-gray-700">Current</th>
-                        <th className="text-center px-4 py-3 text-sm font-semibold text-gray-700">Mortality</th>
+                        <th className="text-center px-4 py-3 text-sm font-semibold text-gray-700">Dead</th>
                         <th className="text-center px-4 py-3 text-sm font-semibold text-gray-700">Rate</th>
                         <th className="text-center px-4 py-3 text-sm font-semibold text-gray-700">Status</th>
                       </tr>
