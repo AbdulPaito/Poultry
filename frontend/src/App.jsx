@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import axios from 'axios'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { ToastProvider } from './contexts/ToastContext'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Chickens from './pages/Chickens'
@@ -70,22 +71,24 @@ function PrivateRoute({ children }) {
 function App() {
   return (
     <AuthProvider>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={
-          <PrivateRoute>
-            <Layout />
-          </PrivateRoute>
-        }>
-          <Route index element={<Dashboard />} />
-          <Route path="chickens" element={<Chickens />} />
-          <Route path="eggs" element={<Eggs />} />
-          <Route path="feeds" element={<Feeds />} />
-          <Route path="medicine" element={<Medicine />} />
-          <Route path="reports" element={<Reports />} />
-          <Route path="settings" element={<Settings />} />
-        </Route>
-      </Routes>
+      <ToastProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={
+            <PrivateRoute>
+              <Layout />
+            </PrivateRoute>
+          }>
+            <Route index element={<Dashboard />} />
+            <Route path="chickens" element={<Chickens />} />
+            <Route path="eggs" element={<Eggs />} />
+            <Route path="feeds" element={<Feeds />} />
+            <Route path="medicine" element={<Medicine />} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
+        </Routes>
+      </ToastProvider>
     </AuthProvider>
   )
 }

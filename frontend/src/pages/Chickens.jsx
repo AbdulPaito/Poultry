@@ -19,6 +19,8 @@ import {
   AlertTriangle
 } from 'lucide-react'
 import { batchAPI } from '../services/api'
+import { useAuth } from '../contexts/AuthContext'
+import { useToast } from '../contexts/ToastContext'
 
 // Modal Component
 function Modal({ isOpen, onClose, title, children }) {
@@ -78,6 +80,7 @@ function FieldLabel({ icon: Icon, label, value, subValue, color = 'gray' }) {
 }
 
 function Chickens() {
+  const { success, error: showError } = useToast()
   const [batches, setBatches] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -155,8 +158,10 @@ function Chickens() {
       // Reload batches to ensure sync with backend
       await loadBatches()
       closeModal()
+      success(editingBatch ? 'Batch updated successfully!' : 'New batch added successfully!')
     } catch (error) {
       console.error('Error saving batch:', error)
+      showError('Failed to save batch. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -181,8 +186,10 @@ function Chickens() {
       setBatches(prev => prev.filter(b => b._id !== batchToDelete))
       await loadBatches()
       closeBatchDeleteConfirm()
+      success('Batch deleted successfully!')
     } catch (error) {
       console.error('Error deleting batch:', error)
+      showError('Failed to delete batch. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -360,9 +367,10 @@ function Chickens() {
       ))
 
       closeEditMortalityModal()
+      success('Mortality record updated successfully!')
     } catch (error) {
       console.error('Error updating mortality:', error)
-      alert('Failed to update record')
+      showError('Failed to update mortality record.')
     }
   }
 
@@ -398,9 +406,10 @@ function Chickens() {
       ))
 
       closeMortalityModal()
+      success(`Recorded ${mortalityForm.count} dead chicken(s)`)
     } catch (error) {
       console.error('Error recording mortality:', error)
-      alert('Failed to save mortality record. Please try again.')
+      showError('Failed to save mortality record. Please try again.')
     }
   }
 
