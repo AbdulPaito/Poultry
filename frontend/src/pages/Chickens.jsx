@@ -122,7 +122,9 @@ function Chickens() {
   const loadBatches = async () => {
     try {
       const response = await batchAPI.getAll()
-      setBatches(response.data)
+      console.log('Loaded batches:', response.data)
+      setBatches(response.data || [])
+      return response.data
     } catch (error) {
       console.error('Error loading batches:', error)
       setBatches([
@@ -158,16 +160,32 @@ function Chickens() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setLoading(true)
     try {
       if (editingBatch) {
-        await batchAPI.update(editingBatch._id, formData)
+        // Update existing batch
+        const response = await batchAPI.update(editingBatch._id, formData)
+        console.log('Batch updated:', response.data)
+        
+        // Update local state immediately for better UX
+        setBatches(prev => prev.map(b => 
+          b._id === editingBatch._id ? { ...b, ...formData } : b
+        ))
       } else {
-        await batchAPI.create(formData)
+        // Create new batch
+        const response = await batchAPI.create(formData)
+        console.log('Batch created:', response.data)
       }
-      loadBatches()
+      
+      // Reload batches to ensure sync with backend
+      await loadBatches()
       closeModal()
+      alert(editingBatch ? 'Batch updated successfully!' : 'Batch created successfully!')
     } catch (error) {
       console.error('Error saving batch:', error)
+      alert('Error saving batch: ' + (error.response?.data?.message || error.message))
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -183,13 +201,19 @@ function Chickens() {
 
   const confirmBatchDelete = async () => {
     if (!batchToDelete) return
+    setLoading(true)
     try {
       await batchAPI.delete(batchToDelete)
-      loadBatches()
+      // Remove from local state immediately
+      setBatches(prev => prev.filter(b => b._id !== batchToDelete))
+      await loadBatches()
       closeBatchDeleteConfirm()
+      alert('Batch deleted successfully!')
     } catch (error) {
       console.error('Error deleting batch:', error)
       alert('Failed to delete batch: ' + (error.response?.data?.message || error.message))
+    } finally {
+      setLoading(false)
     }
   }
 
