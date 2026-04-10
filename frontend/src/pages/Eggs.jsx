@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { AnimatePresence } from 'framer-motion'
 import { eggAPI, batchAPI, reportAPI } from '../services/api'
+import { useToast } from '../contexts/ToastContext'
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks } from 'date-fns'
 
 // Modal Component
@@ -184,6 +185,7 @@ function EggPriceModal({ isOpen, onClose, eggPrices, onUpdate }) {
 }
 
 function Eggs() {
+  const { success, error: showError } = useToast()
   const [records, setRecords] = useState([])
   const [batches, setBatches] = useState([])
   const [eggPrices, setEggPrices] = useState(null)
