@@ -136,10 +136,23 @@ function Feeds() {
       const allRecords = allUsageRes.data || []
       const totalQty = allRecords.reduce((sum, r) => sum + (r.quantity || 0), 0)
       const feedsList = feedsRes.data || []
-      const totalCost = allRecords.reduce((sum, r) => {
-        const feed = feedsList.find(f => f._id === r.feedId)
-        return sum + ((r.quantity || 0) * (feed?.costPerUnit || 0))
-      }, 0)
+      
+      console.log('Feeds:', feedsList)
+      console.log('Consumption Records:', allRecords)
+      
+      let totalCost = 0
+      allRecords.forEach(r => {
+        const feed = feedsList.find(f => f._id === r.feedId || f._id === r.feed?._id)
+        const costPerUnit = feed?.costPerUnit || feed?.cost || 0
+        const quantity = parseFloat(r.quantity) || 0
+        const itemCost = quantity * costPerUnit
+        
+        console.log(`Record: ${r.feedId || r.feed?._id}, Feed: ${feed?.name}, Qty: ${quantity}, Cost/Unit: ${costPerUnit}, Item Cost: ${itemCost}`)
+        
+        totalCost += itemCost
+      })
+      
+      console.log('Total Cost:', totalCost)
       
       setTotalConsumption({
         totalQuantity: totalQty,
