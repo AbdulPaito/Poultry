@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { 
   Pill, Plus, Search, AlertCircle, Calendar, Package, 
   Edit2, Trash2, X, CheckCircle, Clock, History,
-  ChevronDown, ChevronUp, AlertTriangle, TrendingUp, DollarSign
+  ChevronDown, ChevronUp, AlertTriangle, TrendingUp, DollarSign, Store
 } from 'lucide-react'
 import { medicineAPI, medicineScheduleAPI, batchAPI } from '../services/api'
 
@@ -399,102 +399,254 @@ function Medicine() {
                 )}
               </div>
 
-              {/* Modern Medicine Cards Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {/* Medicine Cards - Feeds Style */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
                 {filteredMedicines.map((med, index) => (
                   <motion.div
                     key={med._id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    whileHover={{ y: -4, scale: 1.02 }}
-                    className={`bg-white rounded-2xl p-5 border-2 shadow-lg transition-all cursor-pointer ${
-                      med.stock <= med.lowStockThreshold 
-                        ? 'border-red-200 shadow-red-100' 
-                        : med.status === 'expired'
-                        ? 'border-gray-200 shadow-gray-100 opacity-60'
-                        : 'border-gray-100 hover:border-blue-200 shadow-blue-50/50'
-                    }`}
+                    whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                    className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl transition-all"
                   >
-                    {/* Card Header */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                          med.type === 'Antibiotic' ? 'bg-purple-100' :
-                          med.type === 'Vaccine' ? 'bg-green-100' :
-                          med.type === 'Vitamin' ? 'bg-yellow-100' :
-                          med.type === 'Dewormer' ? 'bg-orange-100' :
-                          'bg-blue-100'
-                        }`}>
-                          <Pill className={`w-6 h-6 ${
-                            med.type === 'Antibiotic' ? 'text-purple-600' :
-                            med.type === 'Vaccine' ? 'text-green-600' :
-                            med.type === 'Vitamin' ? 'text-yellow-600' :
-                            med.type === 'Dewormer' ? 'text-orange-600' :
-                            'text-blue-600'
-                          }`} />
+                    {/* Card Header with Gradient - Feeds Style */}
+                    <div className={`p-5 ${
+                      med.stock <= med.lowStockThreshold 
+                        ? 'bg-gradient-to-r from-red-500 via-red-500 to-rose-500' 
+                        : med.status === 'expired'
+                        ? 'bg-gradient-to-r from-gray-500 via-gray-500 to-gray-600'
+                        : 'bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500'
+                    }`}>
+                      <div className="flex items-center justify-between">
+                        {/* Left - Icon & Title */}
+                        <div className="flex items-center gap-3">
+                          <motion.div 
+                            whileHover={{ scale: 1.1, rotate: 5 }}
+                            className="w-12 h-12 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center"
+                          >
+                            <Pill className="w-6 h-6 text-white" />
+                          </motion.div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded ${
+                                med.stock <= med.lowStockThreshold 
+                                  ? 'bg-red-700/50 text-white' 
+                                  : med.status === 'expired'
+                                  ? 'bg-gray-700/50 text-white'
+                                  : 'bg-white/20 text-white'
+                              }`}>
+                                {med.type}
+                              </span>
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                med.stock <= med.lowStockThreshold || med.status === 'expired'
+                                  ? 'bg-white/30 text-white'
+                                  : getStatusColor(med.status)
+                              }`}>
+                                {getStatusLabel(med.status)}
+                              </span>
+                            </div>
+                            <h3 className="font-bold text-xl text-white mt-0.5">{med.name}</h3>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-bold text-gray-800">{med.name}</h3>
-                          <p className="text-xs text-gray-500">{med.brand || med.supplier || 'No supplier'}</p>
+                        
+                        {/* Right - Actions */}
+                        <div className="flex items-center gap-1.5">
+                          <motion.button
+                            whileHover={{ scale: 1.1, rotate: -5 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={(e) => { e.stopPropagation(); openEditMedicine(med); }}
+                            className="w-10 h-10 bg-white/25 hover:bg-white/40 backdrop-blur-md rounded-xl transition-all flex items-center justify-center shadow-lg shadow-black/10 group"
+                            title={`Edit ${med.name}`}
+                          >
+                            <Edit2 className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
+                          </motion.button>
+                          <motion.button
+                            whileHover={{ scale: 1.1, rotate: 5 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={(e) => { e.stopPropagation(); handleDeleteMedicine(med._id); }}
+                            className="w-10 h-10 bg-white/25 hover:bg-red-400/60 backdrop-blur-md rounded-xl transition-all flex items-center justify-center shadow-lg shadow-black/10 group"
+                            title={`Delete ${med.name}`}
+                          >
+                            <Trash2 className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
+                          </motion.button>
                         </div>
                       </div>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(med.status)}`}>
-                        {getStatusLabel(med.status)}
-                      </span>
                     </div>
-                    
-                    {/* Card Stats */}
-                    <div className="grid grid-cols-2 gap-3 mb-4">
-                      <div className="bg-gray-50 rounded-xl p-3">
-                        <p className="text-xs text-gray-500 mb-1">Stock</p>
-                        <p className={`font-bold text-lg ${med.stock <= med.lowStockThreshold ? 'text-red-600' : 'text-gray-800'}`}>
-                          {med.stock} <span className="text-sm font-normal">{med.unit}</span>
-                        </p>
-                      </div>
-                      <div className="bg-gray-50 rounded-xl p-3">
-                        <p className="text-xs text-gray-500 mb-1">Expires</p>
-                        <p className="font-bold text-gray-800">
-                          {med.expiryDate 
-                            ? new Date(med.expiryDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                            : 'N/A'
-                          }
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {/* Card Footer */}
-                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                      <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-medium">
-                        {med.type}
-                      </span>
-                      <div className="flex items-center gap-1">
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={(e) => { e.stopPropagation(); openRestockModal(med); }}
-                          className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors"
-                          title="Restock"
+
+                    {/* Card Body - 4 Column Grid like Feeds */}
+                    <div className="p-5">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {/* Stock - Blue */}
+                        <motion.div 
+                          whileHover={{ scale: 1.03, translateY: -2 }}
+                          className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-2xl p-4 border border-blue-100 shadow-md hover:shadow-xl transition-all"
                         >
-                          <Plus className="w-5 h-5" />
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center shadow-lg shadow-blue-200">
+                              <Package className="w-4 h-4 text-white" />
+                            </div>
+                            <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">Stock</span>
+                          </div>
+                          <div className="flex items-baseline gap-1">
+                            <span className={`text-2xl font-bold ${med.stock <= med.lowStockThreshold ? 'text-red-600' : 'text-gray-900'}`}>
+                              {med.stock}
+                            </span>
+                            <span className="text-sm text-gray-500">{med.unit}</span>
+                          </div>
+                          {med.stock <= med.lowStockThreshold && (
+                            <p className="text-xs text-red-500 mt-1">Alert at {med.lowStockThreshold}</p>
+                          )}
+                        </motion.div>
+
+                        {/* Cost - Amber */}
+                        <motion.div 
+                          whileHover={{ scale: 1.03, translateY: -2 }}
+                          className="bg-gradient-to-br from-amber-50 to-amber-100/50 rounded-2xl p-4 border border-amber-100 shadow-md hover:shadow-xl transition-all"
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center shadow-lg shadow-amber-200">
+                              <DollarSign className="w-4 h-4 text-white" />
+                            </div>
+                            <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">Cost</span>
+                          </div>
+                          <p className="text-2xl font-bold text-gray-900">₱{med.costPerUnit?.toFixed(2) || '0.00'}</p>
+                          <p className="text-xs text-gray-500 mt-1">per {med.unit}</p>
+                        </motion.div>
+
+                        {/* Type - Purple */}
+                        <motion.div 
+                          whileHover={{ scale: 1.03, translateY: -2 }}
+                          className="bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-2xl p-4 border border-purple-100 shadow-md hover:shadow-xl transition-all"
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center shadow-lg shadow-purple-200">
+                              <Pill className="w-4 h-4 text-white" />
+                            </div>
+                            <span className="text-xs font-bold text-purple-600 uppercase tracking-wider">Type</span>
+                          </div>
+                          <p className="text-xl font-bold text-gray-900">{med.type}</p>
+                          {med.brand && <p className="text-xs text-gray-500 mt-1 truncate">{med.brand}</p>}
+                        </motion.div>
+
+                        {/* Value - Emerald */}
+                        <motion.div 
+                          whileHover={{ scale: 1.03, translateY: -2 }}
+                          className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl p-4 border border-emerald-100 shadow-md hover:shadow-xl transition-all"
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-200">
+                              <TrendingUp className="w-4 h-4 text-white" />
+                            </div>
+                            <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Value</span>
+                          </div>
+                          <p className="text-xl font-bold text-gray-900">₱{(med.stock * (med.costPerUnit || 0)).toLocaleString()}</p>
+                          <p className="text-xs text-gray-500 mt-1">Total inventory value</p>
+                        </motion.div>
+                      </div>
+
+                      {/* Expiry Date */}
+                      <motion.div 
+                        whileHover={{ scale: 1.01 }}
+                        className={`mt-4 p-4 rounded-2xl border shadow-sm hover:shadow-md transition-all ${
+                          med.status === 'expired' 
+                            ? 'bg-gray-50 border-gray-200' 
+                            : med.status === 'expiring-soon'
+                            ? 'bg-amber-50 border-amber-200'
+                            : 'bg-blue-50 border-blue-200'
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                            med.status === 'expired' ? 'bg-gray-500' : 
+                            med.status === 'expiring-soon' ? 'bg-amber-500' : 'bg-blue-500'
+                          }`}>
+                            <Calendar className="w-4 h-4 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <span className={`text-xs font-bold uppercase tracking-wider ${
+                                  med.status === 'expired' ? 'text-gray-600' :
+                                  med.status === 'expiring-soon' ? 'text-amber-600' :
+                                  'text-blue-600'
+                                }`}>Expires</span>
+                                <p className="font-bold text-gray-900 text-lg">
+                                  {med.expiryDate 
+                                    ? new Date(med.expiryDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                                    : 'No expiry date'
+                                  }
+                                </p>
+                              </div>
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                med.status === 'expired' ? 'bg-gray-200 text-gray-700' :
+                                med.status === 'expiring-soon' ? 'bg-amber-200 text-amber-700' :
+                                'bg-emerald-100 text-emerald-700'
+                              }`}>
+                                {med.status === 'expired' ? 'Expired' :
+                                 med.status === 'expiring-soon' ? 'Expiring Soon' :
+                                 'Good'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+
+                      {/* Supplier Info */}
+                      {med.supplier && (
+                        <motion.div 
+                          whileHover={{ scale: 1.01 }}
+                          className="mt-3 p-4 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 bg-gray-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <Store className="w-4 h-4 text-white" />
+                            </div>
+                            <div>
+                              <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">Supplier</span>
+                              <p className="text-sm text-gray-700 mt-1">{med.supplier}</p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* Notes */}
+                      {med.notes && (
+                        <motion.div 
+                          whileHover={{ scale: 1.01 }}
+                          className="mt-3 p-4 bg-gradient-to-r from-blue-50/50 to-cyan-50/50 rounded-2xl border border-blue-100/50 shadow-sm hover:shadow-md transition-all"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <History className="w-4 h-4 text-white" />
+                            </div>
+                            <div>
+                              <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">Notes</span>
+                              <p className="text-sm text-gray-700 mt-1 leading-relaxed">{med.notes}</p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* Bottom Actions */}
+                      <div className="mt-4 flex gap-3">
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => openRestockModal(med)}
+                          className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-colors shadow-md shadow-emerald-200"
+                        >
+                          <Plus className="w-4 h-4" />
+                          Restock
                         </motion.button>
                         <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={(e) => { e.stopPropagation(); openEditMedicine(med); }}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
-                          title="Edit"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => openEditMedicine(med)}
+                          className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-colors shadow-md shadow-blue-200"
                         >
-                          <Edit2 className="w-5 h-5" />
-                        </motion.button>
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={(e) => { e.stopPropagation(); handleDeleteMedicine(med._id); }}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-5 h-5" />
+                          <Edit2 className="w-4 h-4" />
+                          Edit
                         </motion.button>
                       </div>
                     </div>
