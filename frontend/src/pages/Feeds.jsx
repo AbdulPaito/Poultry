@@ -124,7 +124,9 @@ function Feeds() {
         feedConsumptionAPI.getTodayUsage().catch(() => ({ data: { summary: { totalQuantity: 0 } } })),
         feedConsumptionAPI.getAll().catch(() => ({ data: [] }))
       ])
-      setFeeds(feedsRes.data || [])
+      // Store feeds first so we can calculate cost properly
+      const feedsList = feedsRes.data || []
+      setFeeds(feedsList)
       setAlerts(alertsRes.data || [])
       setBatches(batchesRes.data || [])
       setTodayUsage({
@@ -135,27 +137,42 @@ function Feeds() {
       // Calculate total consumption and cost
       const allRecords = allUsageRes.data || []
       const totalQty = allRecords.reduce((sum, r) => sum + (parseFloat(r.quantity) || 0), 0)
-      const feedsList = feedsRes.data || []
       
-      // Calculate total cost with proper feed lookup
-      const totalCost = allRecords.reduce((sum, r) => {
-        // Handle different possible feed ID field names
-        const recordFeedId = r.feedId || r.feed?._id || r.feedId?._id || r.feed
-        const feed = feedsList.find(f => 
-          f._id === recordFeedId || 
-          f._id?.toString() === recordFeedId?.toString()
-        )
+      // Calculate total cost with feed lookup from the freshly loaded feeds
+      let calculatedTotalCost = 0
+      
+      allRecords.forEach(r => {
+        // Extract feed ID from various possible formats
+        let feedId = r.feedId
+        if (typeof feedId === 'object' && feedId !== null) {
+          feedId = feedId._id || feedId.id
+        }
+        if (typeof r.feed === 'object' && r.feed !== null) {
+          feedId = r.feed._id || r.feed.id
+        }
         
-        // Get cost per unit from various possible field names
-        const costPerUnit = parseFloat(feed?.costPerUnit) || parseFloat(feed?.cost) || parseFloat(feed?.unitCost) || 0
+        // Find matching feed from our loaded feeds
+        const matchingFeed = feedsList.find(f => {
+          const fId = typeof f._id === 'object' ? f._id.toString() : f._id
+          const rId = typeof feedId === 'object' ? feedId.toString() : feedId
+          return fId === rId || f._id === feedId
+        })
+        
+        // Get cost and quantity
+        const costPerUnit = parseFloat(matchingFeed?.costPerUnit) || 0
         const quantity = parseFloat(r.quantity) || 0
+        const recordCost = quantity * costPerUnit
         
-        return sum + (quantity * costPerUnit)
-      }, 0)
+        console.log(`Cost calc: Feed=${matchingFeed?.name}, Qty=${quantity}, Cost/Unit=${costPerUnit}, Total=${recordCost}`)
+        
+        calculatedTotalCost += recordCost
+      })
+      
+      console.log(`Final calculated total cost: ${calculatedTotalCost}`)
       
       setTotalConsumption({
         totalQuantity: totalQty,
-        totalCost: totalCost,
+        totalCost: calculatedTotalCost,
         records: allRecords
       })
     } catch (error) {
