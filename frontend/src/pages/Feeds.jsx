@@ -134,25 +134,24 @@ function Feeds() {
       
       // Calculate total consumption and cost
       const allRecords = allUsageRes.data || []
-      const totalQty = allRecords.reduce((sum, r) => sum + (r.quantity || 0), 0)
+      const totalQty = allRecords.reduce((sum, r) => sum + (parseFloat(r.quantity) || 0), 0)
       const feedsList = feedsRes.data || []
       
-      console.log('Feeds:', feedsList)
-      console.log('Consumption Records:', allRecords)
-      
-      let totalCost = 0
-      allRecords.forEach(r => {
-        const feed = feedsList.find(f => f._id === r.feedId || f._id === r.feed?._id)
-        const costPerUnit = feed?.costPerUnit || feed?.cost || 0
+      // Calculate total cost with proper feed lookup
+      const totalCost = allRecords.reduce((sum, r) => {
+        // Handle different possible feed ID field names
+        const recordFeedId = r.feedId || r.feed?._id || r.feedId?._id || r.feed
+        const feed = feedsList.find(f => 
+          f._id === recordFeedId || 
+          f._id?.toString() === recordFeedId?.toString()
+        )
+        
+        // Get cost per unit from various possible field names
+        const costPerUnit = parseFloat(feed?.costPerUnit) || parseFloat(feed?.cost) || parseFloat(feed?.unitCost) || 0
         const quantity = parseFloat(r.quantity) || 0
-        const itemCost = quantity * costPerUnit
         
-        console.log(`Record: ${r.feedId || r.feed?._id}, Feed: ${feed?.name}, Qty: ${quantity}, Cost/Unit: ${costPerUnit}, Item Cost: ${itemCost}`)
-        
-        totalCost += itemCost
-      })
-      
-      console.log('Total Cost:', totalCost)
+        return sum + (quantity * costPerUnit)
+      }, 0)
       
       setTotalConsumption({
         totalQuantity: totalQty,
