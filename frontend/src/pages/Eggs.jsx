@@ -782,111 +782,6 @@ function Eggs() {
         </div>
       </motion.div>
 
-      {/* Weekly Overview - Premium Design with Navigation */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100"
-      >
-        {/* Mobile Responsive Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          {/* Title */}
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-emerald-500" />
-            <h3 className="text-lg font-bold text-gray-800">
-              {weekOffset === 0 ? "This Week" : weekOffset === -1 ? "Last Week" : "History"}
-            </h3>
-            {/* Week Range - Mobile: below title, Desktop: inline */}
-            {weeklyData.length > 0 && (
-              <span className="text-xs sm:text-sm text-gray-500 font-medium sm:ml-2">
-                {format(new Date(weeklyData[0].date), 'MMM d')} - {format(new Date(weeklyData[6].date), 'MMM d')}
-              </span>
-            )}
-          </div>
-          
-          {/* Week Navigation - Always visible */}
-          <div className="flex items-center justify-between sm:justify-end gap-3">
-            {/* Navigation Arrows */}
-            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={goToPreviousWeek}
-                className="p-2 rounded-md hover:bg-white hover:shadow-sm transition-all text-gray-600"
-                title="Previous Week"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </motion.button>
-              
-              {weekOffset !== 0 && (
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={goToCurrentWeek}
-                  className="px-3 py-2 rounded-md hover:bg-white hover:shadow-sm transition-all text-sm font-medium text-emerald-600"
-                  title="Current Week"
-                >
-                  Today
-                </motion.button>
-              )}
-              
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={goToNextWeek}
-                className="p-2 rounded-md hover:bg-white hover:shadow-sm transition-all text-gray-600"
-                title="Next Week"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </motion.button>
-            </div>
-            
-            {/* Total eggs badge */}
-            <span className="text-xs text-gray-500 bg-gray-100 px-3 py-2 rounded-full font-medium whitespace-nowrap">
-              {weeklyData.reduce((sum, d) => sum + d.total, 0)} eggs
-            </span>
-          </div>
-        </div>
-        
-        {/* 7-Day Grid - Responsive */}
-        <div className="grid grid-cols-7 gap-1 sm:gap-3">
-          {weeklyData.map((day, idx) => (
-            <motion.div 
-              key={day.date}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: idx * 0.05 }}
-              whileHover={{ scale: 1.02 }}
-              onClick={() => setSelectedDate(day.date)}
-              className={`relative text-center py-3 px-1 sm:p-4 rounded-lg sm:rounded-xl cursor-pointer transition-all ${
-                day.date === selectedDate 
-                  ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-200' 
-                  : 'bg-gradient-to-br from-gray-50 to-white hover:shadow-md border border-gray-100'
-              }`}
-            >
-              <p className={`text-[10px] sm:text-xs font-medium mb-1 sm:mb-2 ${day.date === selectedDate ? 'text-white/80' : 'text-gray-500'}`}>
-                {day.day}
-              </p>
-              <p className={`text-base sm:text-xl font-bold mb-0.5 sm:mb-1 ${day.date === selectedDate ? 'text-white' : 'text-gray-800'}`}>
-                {day.total}
-              </p>
-              {day.broken > 0 && (
-                <p className={`text-[10px] sm:text-xs ${day.date === selectedDate ? 'text-white/70' : 'text-red-500'}`}>
-                  -{day.broken}
-                </p>
-              )}
-              {/* Mini bar chart - Hidden on mobile */}
-              <div className="hidden sm:block mt-2 h-1 bg-black/10 rounded-full overflow-hidden">
-                <div 
-                  className={`h-full rounded-full ${day.date === selectedDate ? 'bg-white/50' : 'bg-emerald-400'}`}
-                  style={{ width: `${Math.min((day.total / 200) * 100, 100)}%` }}
-                />
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
-
       {/* Records Table - Premium Design */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -1007,6 +902,111 @@ function Eggs() {
             </div>
           </div>
         )}
+      </motion.div>
+
+      {/* Weekly Overview - Premium Design with Navigation */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100"
+      >
+        {/* Mobile Responsive Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          {/* Title */}
+          <div className="flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-emerald-500" />
+            <h3 className="text-lg font-bold text-gray-800">
+              {weekOffset === 0 ? "This Week" : weekOffset === -1 ? "Last Week" : "History"}
+            </h3>
+            {/* Week Range - Mobile: below title, Desktop: inline */}
+            {weeklyData.length > 0 && (
+              <span className="text-xs sm:text-sm text-gray-500 font-medium sm:ml-2">
+                {format(new Date(weeklyData[0].date), 'MMM d')} - {format(new Date(weeklyData[6].date), 'MMM d')}
+              </span>
+            )}
+          </div>
+          
+          {/* Week Navigation - Always visible */}
+          <div className="flex items-center justify-between sm:justify-end gap-3">
+            {/* Navigation Arrows */}
+            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={goToPreviousWeek}
+                className="p-2 rounded-md hover:bg-white hover:shadow-sm transition-all text-gray-600"
+                title="Previous Week"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </motion.button>
+              
+              {weekOffset !== 0 && (
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={goToCurrentWeek}
+                  className="px-3 py-2 rounded-md hover:bg-white hover:shadow-sm transition-all text-sm font-medium text-emerald-600"
+                  title="Current Week"
+                >
+                  Today
+                </motion.button>
+              )}
+              
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={goToNextWeek}
+                className="p-2 rounded-md hover:bg-white hover:shadow-sm transition-all text-gray-600"
+                title="Next Week"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </motion.button>
+            </div>
+            
+            {/* Total eggs badge */}
+            <span className="text-xs text-gray-500 bg-gray-100 px-3 py-2 rounded-full font-medium whitespace-nowrap">
+              {weeklyData.reduce((sum, d) => sum + d.total, 0)} eggs
+            </span>
+          </div>
+        </div>
+        
+        {/* 7-Day Grid - Responsive */}
+        <div className="grid grid-cols-7 gap-1 sm:gap-3">
+          {weeklyData.map((day, idx) => (
+            <motion.div 
+              key={day.date}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: idx * 0.05 }}
+              whileHover={{ scale: 1.02 }}
+              onClick={() => setSelectedDate(day.date)}
+              className={`relative text-center py-3 px-1 sm:p-4 rounded-lg sm:rounded-xl cursor-pointer transition-all ${
+                day.date === selectedDate 
+                  ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-200' 
+                  : 'bg-gradient-to-br from-gray-50 to-white hover:shadow-md border border-gray-100'
+              }`}
+            >
+              <p className={`text-[10px] sm:text-xs font-medium mb-1 sm:mb-2 ${day.date === selectedDate ? 'text-white/80' : 'text-gray-500'}`}>
+                {day.day}
+              </p>
+              <p className={`text-base sm:text-xl font-bold mb-0.5 sm:mb-1 ${day.date === selectedDate ? 'text-white' : 'text-gray-800'}`}>
+                {day.total}
+              </p>
+              {day.broken > 0 && (
+                <p className={`text-[10px] sm:text-xs ${day.date === selectedDate ? 'text-white/70' : 'text-red-500'}`}>
+                  -{day.broken}
+                </p>
+              )}
+              {/* Mini bar chart - Hidden on mobile */}
+              <div className="hidden sm:block mt-2 h-1 bg-black/10 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full rounded-full ${day.date === selectedDate ? 'bg-white/50' : 'bg-emerald-400'}`}
+                  style={{ width: `${Math.min((day.total / 200) * 100, 100)}%` }}
+                />
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </motion.div>
 
       {/* Add/Edit Modal */}
