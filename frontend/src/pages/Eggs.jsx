@@ -220,16 +220,20 @@ function Eggs() {
            (parseInt(formData.jumbo) || 0)
   }
 
+  const getBrokenEggs = () => parseInt(formData.broken) || 0
+
   const getTotalEggs = () => parseInt(formData.total) || 0
 
   const getValidationStatus = () => {
     const total = getTotalEggs()
     const sizesSum = getSizesSum()
+    const broken = getBrokenEggs()
+    const accountedEggs = sizesSum + broken
     
     if (total === 0) return { status: 'neutral', message: '' }
-    if (sizesSum > total) return { status: 'error', message: `Sum of sizes (${sizesSum}) exceeds Total Eggs (${total})` }
-    if (sizesSum < total) return { status: 'warning', message: `Sum of sizes (${sizesSum}) is less than Total Eggs (${total}). ${total - sizesSum} eggs unaccounted for.` }
-    return { status: 'success', message: 'Perfect! Sum matches Total Eggs' }
+    if (accountedEggs > total) return { status: 'error', message: `Total accounted (${accountedEggs}) exceeds Total Eggs (${total})` }
+    if (accountedEggs < total) return { status: 'warning', message: `Sum of sizes + broken (${accountedEggs}) is less than Total Eggs (${total}). ${total - accountedEggs} eggs unaccounted for.` }
+    return { status: 'success', message: 'Perfect! All eggs accounted for' }
   }
 
   useEffect(() => {
@@ -1072,7 +1076,9 @@ function Eggs() {
             const validation = getValidationStatus()
             const total = getTotalEggs()
             const sum = getSizesSum()
-            const percentage = total > 0 ? Math.min((sum / total) * 100, 100) : 0
+            const broken = getBrokenEggs()
+            const accounted = sum + broken
+            const percentage = total > 0 ? Math.min((accounted / total) * 100, 100) : 0
             
             if (total === 0) return null
             
@@ -1080,7 +1086,8 @@ function Eggs() {
               <div className="bg-gray-50 rounded-xl p-3 border-2 border-gray-200">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm font-medium text-gray-600">
-                    Size Distribution: <span className="font-bold">{sum}</span> / {total} eggs
+                    Total Accounted: <span className="font-bold">{accounted}</span> / {total} eggs 
+                    <span className="text-xs text-gray-400">(Sizes: {sum} + Broken: {broken})</span>
                   </span>
                   <span className={`text-xs font-bold px-2 py-1 rounded-full ${
                     validation.status === 'success' ? 'bg-emerald-100 text-emerald-700' :
