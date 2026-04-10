@@ -20,6 +20,7 @@ import {
   FileText
 } from 'lucide-react'
 import { feedAPI, feedConsumptionAPI, batchAPI } from '../services/api'
+import { useToast } from '../contexts/ToastContext'
 
 // Modal Component
 function Modal({ isOpen, onClose, title, children }) {
@@ -60,6 +61,7 @@ function Modal({ isOpen, onClose, title, children }) {
 }
 
 function Feeds() {
+  const { success, error: showError } = useToast()
   const [feeds, setFeeds] = useState([])
   const [alerts, setAlerts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -189,13 +191,16 @@ function Feeds() {
       
       if (editingFeed) {
         await feedAPI.update(editingFeed._id, submitData)
+        success('Feed updated successfully!')
       } else {
         await feedAPI.create(submitData)
+        success('New feed added successfully!')
       }
       loadData()
       closeModal()
     } catch (error) {
       console.error('Error saving feed:', error)
+      showError('Failed to save feed. Please try again.')
     }
   }
 
@@ -216,10 +221,10 @@ function Feeds() {
       await feedAPI.delete(deleteTarget._id)
       loadData()
       closeDeleteConfirm()
+      success('Feed deleted successfully!')
     } catch (error) {
       console.error('Error deleting feed:', error)
-      const errorMsg = error.response?.data?.message || error.message || 'Failed to delete feed'
-      alert('Failed to delete feed: ' + errorMsg)
+      showError('Failed to delete feed. Please try again.')
     }
   }
 
@@ -248,12 +253,12 @@ function Feeds() {
 
     const qty = parseFloat(consumptionForm.quantity)
     if (qty <= 0 || qty > selectedFeed.stock) {
-      alert('Invalid quantity. Must be greater than 0 and not exceed current stock.')
+      showError('Invalid quantity. Must be greater than 0 and not exceed current stock.')
       return
     }
 
     if (!consumptionForm.batchId) {
-      alert('Please select a batch that consumed this feed.')
+      showError('Please select a batch that consumed this feed.')
       return
     }
 
@@ -270,10 +275,10 @@ function Feeds() {
       
       loadData()
       closeConsumptionModal()
+      success(`Recorded ${qty} ${selectedFeed.unit} of feed usage`)
     } catch (error) {
       console.error('Error recording consumption:', error)
-      const errorMsg = error.response?.data?.message || error.message || 'Failed to record consumption'
-      alert(`Error: ${errorMsg}`)
+      showError('Failed to record feed consumption. Please try again.')
     }
   }
 
@@ -296,7 +301,7 @@ function Feeds() {
 
     const qty = parseFloat(restockQuantity)
     if (qty <= 0) {
-      alert('Please enter a valid quantity greater than 0')
+      showError('Please enter a valid quantity greater than 0')
       return
     }
 
@@ -305,9 +310,10 @@ function Feeds() {
       await feedAPI.update(restockTarget._id, { stock: newStock })
       loadData()
       closeRestockModal()
+      success(`Restocked ${qty} ${restockTarget.unit} of ${restockTarget.name}`)
     } catch (error) {
       console.error('Error restocking:', error)
-      alert('Failed to restock feed')
+      showError('Failed to restock feed. Please try again.')
     }
   }
 
