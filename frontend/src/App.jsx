@@ -33,6 +33,25 @@ axios.interceptors.request.use(
   }
 )
 
+// Add axios response interceptor to handle auth errors
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Only handle 401 errors, not network errors
+    if (error.response?.status === 401) {
+      console.log('Received 401, clearing auth...')
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      delete axios.defaults.headers.common['Authorization']
+      // Redirect to login if not already there
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login'
+      }
+    }
+    return Promise.reject(error)
+  }
+)
+
 function PrivateRoute({ children }) {
   const { isAuthenticated, isLoading } = useAuth()
   
