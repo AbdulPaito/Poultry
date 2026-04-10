@@ -176,13 +176,31 @@ function Medicine() {
 
   const confirmDeleteMedicine = async () => {
     if (!medicineToDelete) return
-    try {
-      await medicineAPI.delete(medicineToDelete)
-      loadData()
+    
+    // Check if medicine still exists before deleting
+    const medicineExists = medicines.find(m => m._id === medicineToDelete)
+    if (!medicineExists) {
+      alert('Medicine not found in inventory. It may have already been deleted.')
       closeDeleteConfirm()
+      await loadData()
+      return
+    }
+    
+    try {
+      console.log('Deleting medicine ID:', medicineToDelete)
+      const response = await medicineAPI.delete(medicineToDelete)
+      console.log('Delete response:', response)
+      
+      // Update local state immediately
+      setMedicines(prev => prev.filter(m => m._id !== medicineToDelete))
+      
+      await loadData()
+      closeDeleteConfirm()
+      alert('Medicine deleted successfully!')
     } catch (error) {
       console.error('Error deleting medicine:', error)
-      alert('Failed to delete medicine: ' + (error.response?.data?.message || error.message))
+      const errorMsg = error.response?.data?.message || error.message || 'Unknown error'
+      alert(`Failed to delete medicine: ${errorMsg}\n\nThe medicine may have already been deleted or the server is experiencing issues. Please refresh the page.`)
     }
   }
 
