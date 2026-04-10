@@ -96,9 +96,6 @@ function Feeds() {
   // Batches for consumption form
   const [batches, setBatches] = useState([])
   
-  // Today's usage stats
-  const [todayUsage, setTodayUsage] = useState({ total: 0, records: [] })
-  
   // Total consumption stats (all time)
   const [totalConsumption, setTotalConsumption] = useState({ 
     totalQuantity: 0, 
@@ -117,11 +114,10 @@ function Feeds() {
 
   const loadData = async () => {
     try {
-      const [feedsRes, alertsRes, batchesRes, usageRes, allUsageRes] = await Promise.all([
+      const [feedsRes, alertsRes, batchesRes, allUsageRes] = await Promise.all([
         feedAPI.getAll(),
         feedAPI.getAlerts(),
         batchAPI.getAll(),
-        feedConsumptionAPI.getTodayUsage().catch(() => ({ data: { summary: { totalQuantity: 0 } } })),
         feedConsumptionAPI.getAll().catch(() => ({ data: [] }))
       ])
       // Store feeds first so we can calculate cost properly
@@ -129,10 +125,6 @@ function Feeds() {
       setFeeds(feedsList)
       setAlerts(alertsRes.data || [])
       setBatches(batchesRes.data || [])
-      setTodayUsage({
-        total: usageRes.data?.summary?.totalQuantity || 0,
-        records: usageRes.data?.records || []
-      })
       
       // Calculate total consumption and cost
       const allRecords = allUsageRes.data || []
@@ -830,111 +822,6 @@ function Feeds() {
             </motion.div>
           ))}
         </div>
-      )}
-
-      {/* Today's Feed Usage Section */}
-      {todayUsage.records && todayUsage.records.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden mt-6"
-        >
-          {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 p-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
-                  <TrendingDown className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-white">Today's Feed Usage</h3>
-                  <p className="text-white/80 text-sm">Consumption records for today</p>
-                </div>
-              </div>
-              
-              {/* Total Stats */}
-              <div className="flex gap-3">
-                <div className="bg-white/20 backdrop-blur rounded-xl px-4 py-2 text-center">
-                  <p className="text-2xl font-bold text-white">{todayUsage.total || 0}</p>
-                  <p className="text-xs text-white/80 uppercase">kg Used</p>
-                </div>
-                <div className="bg-white/20 backdrop-blur rounded-xl px-4 py-2 text-center">
-                  <p className="text-2xl font-bold text-white">
-                    ₱{todayUsage.records.reduce((sum, record) => {
-                      const feed = feeds.find(f => f._id === record.feedId)
-                      return sum + ((record.quantity || 0) * (feed?.costPerUnit || 0))
-                    }, 0).toLocaleString()}
-                  </p>
-                  <p className="text-xs text-white/80 uppercase">Total Cost</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Usage Records List */}
-          <div className="p-5">
-            <div className="space-y-3">
-              {todayUsage.records.map((record, idx) => {
-                const feed = feeds.find(f => f._id === record.feedId)
-                const batch = batches.find(b => b._id === record.batchId)
-                const cost = (record.quantity || 0) * (feed?.costPerUnit || 0)
-                
-                return (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:bg-blue-50/50 hover:border-blue-200 transition-all"
-                  >
-                    {/* Left - Feed & Batch Info */}
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center">
-                        <Wheat className="w-6 h-6 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-800">{feed?.name || 'Unknown Feed'}</p>
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <span>Batch: {batch?.batchId || 'Unknown'}</span>
-                          <span className="text-gray-300">•</span>
-                          <span>{batch?.breed || 'Unknown breed'}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Right - Quantity & Cost */}
-                    <div className="text-right">
-                      <p className="font-bold text-gray-900 text-lg">
-                        {record.quantity} {feed?.unit || 'kg'}
-                      </p>
-                      <p className="text-sm text-emerald-600 font-medium">
-                        ₱{cost.toLocaleString()} @ ₱{feed?.costPerUnit || 0}/{feed?.unit || 'kg'}
-                      </p>
-                    </div>
-                  </motion.div>
-                )
-              })}
-            </div>
-
-            {/* Summary Footer */}
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <div className="flex justify-between items-center">
-                <p className="text-sm text-gray-500">
-                  {todayUsage.records.length} consumption record{todayUsage.records.length > 1 ? 's' : ''} today
-                </p>
-                <div className="text-right">
-                  <p className="text-sm text-gray-500">Total Consumption Value</p>
-                  <p className="text-2xl font-bold text-emerald-600">
-                    ₱{todayUsage.records.reduce((sum, record) => {
-                      const feed = feeds.find(f => f._id === record.feedId)
-                      return sum + ((record.quantity || 0) * (feed?.costPerUnit || 0))
-                    }, 0).toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
       )}
 
       {/* Add/Edit Modal - Improved */}
