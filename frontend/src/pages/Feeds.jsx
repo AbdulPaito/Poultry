@@ -98,6 +98,13 @@ function Feeds() {
   
   // Today's usage stats
   const [todayUsage, setTodayUsage] = useState({ total: 0, records: [] })
+  
+  // Total consumption stats (all time)
+  const [totalConsumption, setTotalConsumption] = useState({ 
+    totalQuantity: 0, 
+    totalCost: 0, 
+    records: [] 
+  })
 
   // Quick restock modal
   const [restockModalOpen, setRestockModalOpen] = useState(false)
@@ -110,11 +117,12 @@ function Feeds() {
 
   const loadData = async () => {
     try {
-      const [feedsRes, alertsRes, batchesRes, usageRes] = await Promise.all([
+      const [feedsRes, alertsRes, batchesRes, usageRes, allUsageRes] = await Promise.all([
         feedAPI.getAll(),
         feedAPI.getAlerts(),
         batchAPI.getAll(),
-        feedConsumptionAPI.getTodayUsage().catch(() => ({ data: { summary: { totalQuantity: 0 } } }))
+        feedConsumptionAPI.getTodayUsage().catch(() => ({ data: { summary: { totalQuantity: 0 } } })),
+        feedConsumptionAPI.getAll().catch(() => ({ data: [] }))
       ])
       setFeeds(feedsRes.data || [])
       setAlerts(alertsRes.data || [])
@@ -122,6 +130,21 @@ function Feeds() {
       setTodayUsage({
         total: usageRes.data?.summary?.totalQuantity || 0,
         records: usageRes.data?.records || []
+      })
+      
+      // Calculate total consumption and cost
+      const allRecords = allUsageRes.data || []
+      const totalQty = allRecords.reduce((sum, r) => sum + (r.quantity || 0), 0)
+      const feedsList = feedsRes.data || []
+      const totalCost = allRecords.reduce((sum, r) => {
+        const feed = feedsList.find(f => f._id === r.feedId)
+        return sum + ((r.quantity || 0) * (feed?.costPerUnit || 0))
+      }, 0)
+      
+      setTotalConsumption({
+        totalQuantity: totalQty,
+        totalCost: totalCost,
+        records: allRecords
       })
     } catch (error) {
       console.error('Error loading data:', error)
@@ -426,6 +449,7 @@ function Feeds() {
 
       {/* Enhanced Stats Row */}
       <div className="flex flex-wrap gap-3">
+        {/* Items in Stock */}
         <motion.div 
           whileHover={{ y: -3, scale: 1.02 }}
           className="flex-1 min-w-[100px] bg-white rounded-2xl p-4 shadow-sm border border-gray-100/80 flex items-center gap-3 cursor-pointer hover:shadow-lg hover:border-emerald-200 transition-all"
@@ -434,10 +458,13 @@ function Feeds() {
             <Layers className="w-6 h-6 text-emerald-600" />
           </div>
           <div>
-            <p className="text-gray-400 text-xs font-medium uppercase tracking-wide">Items</p>
+            <p className="text-gray-400 text-xs font-medium uppercase tracking-wide">In Stock</p>
             <p className="text-2xl font-bold text-gray-800">{feeds.length}</p>
+            <p className="text-[10px] text-emerald-500 font-medium">feed types</p>
           </div>
         </motion.div>
+        
+        {/* Alerts */}
         <motion.div 
           whileHover={{ y: -3, scale: 1.02 }}
           className={`flex-1 min-w-[100px] bg-white rounded-2xl p-4 shadow-sm border flex items-center gap-3 cursor-pointer hover:shadow-lg transition-all ${alerts.length > 0 ? 'border-red-100 hover:border-red-200' : 'border-gray-100/80 hover:border-amber-200'}`}
@@ -451,7 +478,7 @@ function Feeds() {
           </div>
         </motion.div>
         
-        {/* Daily Usage - NEW */}
+        {/* Total Consumed - All Time */}
         <motion.div 
           whileHover={{ y: -3, scale: 1.02 }}
           className="flex-1 min-w-[120px] bg-white rounded-2xl p-4 shadow-sm border border-gray-100/80 flex items-center gap-3 cursor-pointer hover:shadow-lg hover:border-blue-200 transition-all"
@@ -460,22 +487,24 @@ function Feeds() {
             <TrendingDown className="w-6 h-6 text-blue-600" />
           </div>
           <div>
-            <p className="text-gray-400 text-xs font-medium uppercase tracking-wide">Today's Usage</p>
-            <p className="text-2xl font-bold text-gray-800">{todayUsage.total || 0}</p>
-            <p className="text-[10px] text-blue-500 font-medium">kg consumed today</p>
+            <p className="text-gray-400 text-xs font-medium uppercase tracking-wide">Total Consumed</p>
+            <p className="text-2xl font-bold text-gray-800">{totalConsumption.totalQuantity || 0}</p>
+            <p className="text-[10px] text-blue-500 font-medium">kg feeds eaten</p>
           </div>
         </motion.div>
         
+        {/* Total Cost of Consumed Feeds */}
         <motion.div 
           whileHover={{ y: -3, scale: 1.02 }}
-          className="flex-1 min-w-[140px] bg-gradient-to-r from-amber-500 via-amber-500 to-orange-500 rounded-2xl p-4 shadow-lg shadow-amber-200/50 flex items-center gap-3 text-white cursor-pointer hover:shadow-xl hover:shadow-amber-200/70 transition-all"
+          className="flex-1 min-w-[140px] bg-gradient-to-r from-red-500 via-red-500 to-rose-500 rounded-2xl p-4 shadow-lg shadow-red-200/50 flex items-center gap-3 text-white cursor-pointer hover:shadow-xl hover:shadow-red-200/70 transition-all"
         >
           <div className="w-12 h-12 bg-white/25 backdrop-blur rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-black/10">
             <DollarSign className="w-6 h-6 text-white" />
           </div>
           <div>
-            <p className="text-white/70 text-xs font-medium uppercase tracking-wide">Inventory Value</p>
-            <p className="text-2xl font-bold">₱{(totalInventoryValue/1000).toFixed(1)}k</p>
+            <p className="text-white/70 text-xs font-medium uppercase tracking-wide">Total Feed Cost</p>
+            <p className="text-2xl font-bold">₱{(totalConsumption.totalCost/1000).toFixed(1)}k</p>
+            <p className="text-[10px] text-white/80 font-medium">lifetime consumption</p>
           </div>
         </motion.div>
       </div>
