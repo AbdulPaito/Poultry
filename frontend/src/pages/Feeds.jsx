@@ -196,7 +196,8 @@ function Feeds() {
       closeDeleteConfirm()
     } catch (error) {
       console.error('Error deleting feed:', error)
-      alert('Failed to delete feed')
+      const errorMsg = error.response?.data?.message || error.message || 'Failed to delete feed'
+      alert('Failed to delete feed: ' + errorMsg)
     }
   }
 

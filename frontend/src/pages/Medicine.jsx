@@ -62,6 +62,10 @@ function Medicine() {
   const [editingMedicine, setEditingMedicine] = useState(null)
   const [selectedMedicine, setSelectedMedicine] = useState(null)
   
+  // Delete confirmation modal
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [medicineToDelete, setMedicineToDelete] = useState(null)
+  
   // Form states
   const [medicineForm, setMedicineForm] = useState({
     name: '', type: 'Antibiotic', stock: '', unit: 'bottles', 
@@ -160,15 +164,30 @@ function Medicine() {
     }
   }
 
-  const handleDeleteMedicine = async (id) => {
-    if (!confirm('Are you sure you want to delete this medicine?')) return
+  const openDeleteConfirm = (id) => {
+    setMedicineToDelete(id)
+    setDeleteConfirmOpen(true)
+  }
+
+  const closeDeleteConfirm = () => {
+    setDeleteConfirmOpen(false)
+    setMedicineToDelete(null)
+  }
+
+  const confirmDeleteMedicine = async () => {
+    if (!medicineToDelete) return
     try {
-      await medicineAPI.delete(id)
+      await medicineAPI.delete(medicineToDelete)
       loadData()
+      closeDeleteConfirm()
     } catch (error) {
       console.error('Error deleting medicine:', error)
-      alert('Failed to delete medicine')
+      alert('Failed to delete medicine: ' + (error.response?.data?.message || error.message))
     }
+  }
+
+  const handleDeleteMedicine = (id) => {
+    openDeleteConfirm(id)
   }
 
   // Restock
@@ -914,6 +933,69 @@ function Medicine() {
           </div>
         </form>
       </Modal>
+
+      {/* Beautiful Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deleteConfirmOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={closeDeleteConfirm}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden"
+            >
+              {/* Header with warning color */}
+              <div className="bg-gradient-to-r from-red-500 to-red-600 p-6 text-center">
+                <motion.div 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                  className="w-20 h-20 bg-white/20 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-3"
+                >
+                  <AlertTriangle className="w-10 h-10 text-white" />
+                </motion.div>
+                <h3 className="text-2xl font-bold text-white">Delete Medicine?</h3>
+                <p className="text-white/80 text-sm mt-1">This action cannot be undone</p>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <div className="bg-red-50 rounded-xl p-4 border border-red-100 mb-6">
+                  <p className="text-sm text-red-800 text-center">
+                    <strong>Warning:</strong> Deleting this medicine will permanently remove it and all associated schedules from the database.
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={closeDeleteConfirm}
+                    className="flex-1 py-3 border-2 border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02, boxShadow: "0 10px 30px -10px rgba(239, 68, 68, 0.5)" }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={confirmDeleteMedicine}
+                    className="flex-1 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-semibold hover:from-red-600 hover:to-red-700 transition-all shadow-lg shadow-red-200"
+                  >
+                    Delete Medicine
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }

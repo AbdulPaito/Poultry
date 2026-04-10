@@ -22,11 +22,27 @@ export function AuthProvider({ children }) {
           setUser(response.data)
           setIsAuthenticated(true)
         } catch (error) {
-          // Token invalid or expired
-          console.log('Token invalid, clearing auth')
-          localStorage.removeItem('token')
-          localStorage.removeItem('user')
-          delete axios.defaults.headers.common['Authorization']
+          // Only logout if token is actually invalid (401), not for network errors
+          if (error.response?.status === 401) {
+            console.log('Token invalid or expired, clearing auth')
+            localStorage.removeItem('token')
+            localStorage.removeItem('user')
+            delete axios.defaults.headers.common['Authorization']
+          } else {
+            // For network errors or other issues, keep the token and set authenticated
+            // The user will retry on next request
+            console.log('Auth verification failed, keeping session:', error.message)
+            setIsAuthenticated(true)
+            // Try to restore user from localStorage if available
+            const savedUser = localStorage.getItem('user')
+            if (savedUser) {
+              try {
+                setUser(JSON.parse(savedUser))
+              } catch (e) {
+                console.log('Failed to parse saved user')
+              }
+            }
+          }
         }
       }
       setIsLoading(false)
