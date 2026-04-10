@@ -155,10 +155,8 @@ function Chickens() {
       // Reload batches to ensure sync with backend
       await loadBatches()
       closeModal()
-      alert(editingBatch ? 'Batch updated successfully!' : 'Batch created successfully!')
     } catch (error) {
       console.error('Error saving batch:', error)
-      alert('Error saving batch: ' + (error.response?.data?.message || error.message))
     } finally {
       setLoading(false)
     }
@@ -183,10 +181,8 @@ function Chickens() {
       setBatches(prev => prev.filter(b => b._id !== batchToDelete))
       await loadBatches()
       closeBatchDeleteConfirm()
-      alert('Batch deleted successfully!')
     } catch (error) {
       console.error('Error deleting batch:', error)
-      alert('Failed to delete batch: ' + (error.response?.data?.message || error.message))
     } finally {
       setLoading(false)
     }
